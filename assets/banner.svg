@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="220" viewBox="0 0 820 220" role="img" aria-label="NyxTraceScam">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00ff41" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#00ff41" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- fond -->
+  <rect width="820" height="220" fill="#000000"/>
+  <rect width="820" height="220" fill="url(#fade)"/>
+
+  <!-- pluie binaire discrète -->
+  <g font-family="'Courier New',monospace" font-size="13" fill="#00ff41" opacity="0.10">
+    <text x="30"  y="20">1011010</text><text x="30"  y="200" text-anchor="start">0100111</text>
+    <text x="120" y="40">0010</text><text x="120" y="150">110101</text>
+    <text x="700" y="30">1101</text><text x="700" y="120">010011</text><text x="700" y="205">10110</text>
+    <text x="770" y="70">0110</text><text x="770" y="180">1001</text>
+    <text x="640" y="55">10</text><text x="660" y="165">01</text>
+  </g>
+
+  <!-- crochets d'angle facon HUD -->
+  <g stroke="#00ff41" stroke-width="2" fill="none" opacity="0.75">
+    <path d="M14 14 h34 M14 14 v34"/>
+    <path d="M806 14 h-34 M806 14 v34"/>
+    <path d="M14 206 h34 M14 206 v-34"/>
+    <path d="M806 206 h-34 M806 206 v-34"/>
+  </g>
+
+  <!-- embleme terminal -->
+  <g filter="url(#glow)">
+    <rect x="60" y="78" width="66" height="66" rx="8" fill="none" stroke="#00ff41" stroke-width="2.5"/>
+    <text x="74" y="126" font-family="'Courier New',monospace" font-size="34" font-weight="bold" fill="#00ff41">&gt;_</text>
+  </g>
+
+  <!-- titre -->
+  <g filter="url(#glow)" font-family="'Courier New',monospace">
+    <text x="150" y="112" font-size="52" font-weight="bold" fill="#00ff41" letter-spacing="1">NyxTraceScam</text>
+  </g>
+  <text x="152" y="150" font-family="'Courier New',monospace" font-size="16" fill="#adff2f" letter-spacing="0.5">root@target:~# ACCESS GRANTED</text>
+  <text x="152" y="176" font-family="'Courier New',monospace" font-size="13" fill="#00ff41" opacity="0.72">Demo pedagogique de reconnaissance web  //  TP Cyber  //  usage educatif</text>
+</svg>

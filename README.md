@@ -1,11 +1,17 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="NyxTraceScam" width="820">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python">
+  <img src="https://img.shields.io/badge/flask-3.x-black" alt="Flask">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  <img src="https://img.shields.io/badge/usage-%C3%A9ducatif%20uniquement-orange" alt="Usage éducatif">
+</p>
+
 # 🔎 NyxTraceScam
 
 > Démonstration pédagogique : **ce qu'un simple lien web peut apprendre sur l'appareil qui le visite** — et pourquoi ça ne permet *pas* de « pirater un téléphone ».
-
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Flask](https://img.shields.io/badge/flask-3.x-black)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Usage](https://img.shields.io/badge/usage-%C3%A9ducatif%20uniquement-orange)
 
 NyxTraceScam est un mini-serveur Flask conçu pour un **TP de cybersécurité**. Il illustre,
 de façon **transparente**, le fonctionnement des liens de traçage / *reconnaissance*
@@ -29,6 +35,7 @@ générateur de **fiches de signalement** pour la démarche légale « anti-brou
 
 ## Sommaire
 
+- [Aperçu](#-aperçu)
 - [Fonctionnalités](#fonctionnalités)
 - [Ce que l'outil collecte — et ne collecte pas](#ce-que-loutil-collecte--et-ne-collecte-pas)
 - [Prérequis](#prérequis)
@@ -50,6 +57,16 @@ générateur de **fiches de signalement** pour la démarche légale « anti-brou
 - 🖥️ **Tableau de bord `/admin`** protégé par jeton, avec surlignage des VPN/proxy.
 - 📝 **Générateur de fiches de signalement** prêtes pour Pharos / cybermalveillance.gouv.fr.
 - 🌍 **Accès externe** via un tunnel SSH (`localhost.run`) — aucune installation, aucun compte.
+
+## 📸 Aperçu
+
+<p align="center">
+  <img src="assets/screenshot-page.png" alt="Page de capture — thème hacker" width="300">
+  &nbsp;&nbsp;
+  <img src="assets/screenshot-admin.png" alt="Tableau de bord /admin" width="470">
+</p>
+
+<p align="center"><sub>Gauche : la page vue par la cible (thème « hacker », infos lues en direct). Droite : le tableau de bord <code>/admin</code> — <b>données d'illustration factices</b>.</sub></p>
 
 ## Ce que l'outil collecte — et ne collecte pas
 
