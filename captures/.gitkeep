@@ -1,0 +1,2 @@
+# Ce dossier reçoit les captures à l'exécution (journal.jsonl, *.json, fiches .txt).
+# Son contenu est ignoré par git (voir .gitignore) car il contient des données personnelles.

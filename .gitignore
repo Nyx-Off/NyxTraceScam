@@ -1,0 +1,22 @@
+# --- Données de capture : contiennent de vraies IP / données personnelles ---
+# NE JAMAIS committer. Seul le placeholder .gitkeep est suivi.
+captures/*
+!captures/.gitkeep
+
+# --- Logs runtime (serveur / tunnel) ---
+*.log
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.Python
+
+# --- OS / éditeurs ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
