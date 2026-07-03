@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TP Cybersécurité — Recon via un lien (scénario "anti-brouteur")
+NyxTraceScam — Recon via un lien (scénario "anti-brouteur")
 
 BUT
 ---
@@ -9,9 +9,8 @@ Montrer l'intelligence qu'on peut LEGALEMENT récupérer sur quelqu'un qui cliqu
 notre lien (IP -> géoloc/FAI/VPN, empreinte appareil), pour l'identifier et le
 SIGNALER (Pharos, cybermalveillance.gouv.fr).
 
-Cette version ajoute :
-  - un JOURNAL consolidé (captures/journal.jsonl : 1 visite par ligne) ;
-  - une page /admin (tableau de bord) protégée par un JETON d'accès.
+Interface : thème "hacker" (démo de sensibilisation). La page affiche au visiteur
+ce qui a été lu sur son appareil -> prise de conscience.
 
 RAPPEL DES LIMITES (à énoncer dans le rapport)
   - Un lien NE lit PAS contacts/SMS/photos/fichiers (bac à sable navigateur).
@@ -86,54 +85,148 @@ def geoloc_ip(ip):
         return {"erreur": str(e)}
 
 
-# --- Page visiteur : tout est collecté automatiquement, transparente (démo) ---
-PAGE = """
+# ---------------------------------------------------------------------------
+# PAGE visiteur — thème "hacker" (démo de sensibilisation).
+# Collecte identique : uniquement ce que le navigateur expose de lui-même.
+# Servie en texte brut (pas de template) : les accolades CSS/JS restent littérales.
+# ---------------------------------------------------------------------------
+PAGE = '''
 <!doctype html>
-<html lang="fr"><head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Analyse de votre appareil</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
-    .wrap { max-width: 640px; margin: 0 auto; padding: 24px 18px 60px; }
-    h1 { font-size: 1.35rem; margin: 0 0 4px; }
-    h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: #38bdf8; margin: 22px 0 8px; }
-    .sub { color: #94a3b8; font-size: .9rem; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 8px 16px; margin: 6px 0; }
-    .row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #33415577; font-size: .88rem; }
-    .row:last-child { border-bottom: 0; }
-    .k { color: #94a3b8; } .v { text-align: right; word-break: break-word; } .warn { color: #fca5a5; }
-    .tag { background:#0891b2; color:#fff; font-size:.7rem; padding:2px 8px; border-radius:6px; }
-    .note { font-size: .78rem; color: #64748b; margin-top: 18px; }
-  </style></head>
-<body><div class="wrap">
-  <h1>🔎 Analyse de votre appareil <span class="tag">TP CYBER</span></h1>
-  <p class="sub">Informations lues automatiquement par ce lien (démo pédagogique).</p>
-  <h2>📍 Localisation par IP</h2>
-  <div class="card" id="geo"><div class="row"><span class="k">Chargement…</span></div></div>
-  <h2>📱 Appareil</h2>
-  <div class="card" id="infos"><div class="row"><span class="k">Chargement…</span></div></div>
-  <p class="note">Démonstration. Données aussi envoyées au serveur du TP. Le GPS précis
-     n'est pas demandé (il exigerait une popup et votre accord explicite).</p>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>root@target:~#</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#000; }
+  body { font-family:'Courier New', Courier, monospace; color:#00ff41;
+         min-height:100vh; overflow-x:hidden; }
+  #matrix { position:fixed; inset:0; z-index:0; opacity:0.22; }
+  .wrap { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:22px 16px 60px; }
+  .skull { color:#00ff41; font-size:10px; line-height:1.02; text-align:center;
+           text-shadow:0 0 8px #00ff41; white-space:pre; overflow-x:auto; margin:4px 0; }
+  .title { text-align:center; font-size:clamp(2rem,11vw,3.6rem); font-weight:bold;
+           letter-spacing:.22em; margin:8px 0 2px; position:relative; color:#00ff41;
+           text-shadow:0 0 12px #00ff41; }
+  .title::before, .title::after { content:attr(data-text); position:absolute; left:0; top:0; width:100%; }
+  .title::before { color:#ff003c; animation:gl1 1.6s infinite linear alternate; z-index:-1; }
+  .title::after  { color:#00e5ff; animation:gl2 2.2s infinite linear alternate; z-index:-2; }
+  @keyframes gl1 { 0% { transform:translate(-2px,-1px) } 100% { transform:translate(2px,1px) } }
+  @keyframes gl2 { 0% { transform:translate(2px,1px) } 100% { transform:translate(-2px,-1px) } }
+  .access { text-align:center; color:#adff2f; font-size:1rem; margin:6px 0 20px;
+            min-height:1.3em; text-shadow:0 0 6px #00ff41; }
+  .cursor { animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0 } }
+  .term { border:1px solid #00ff4155; background:rgba(0,26,5,0.66); border-radius:6px;
+          padding:14px 16px; box-shadow:inset 0 0 22px #00ff4126; }
+  .term h2 { color:#adff2f; font-size:.82rem; letter-spacing:.14em; margin:16px 0 6px;
+             border-bottom:1px dashed #00ff4144; padding-bottom:4px; }
+  .term h2:first-of-type { margin-top:2px; }
+  .line { font-size:.85rem; padding:3px 0; word-break:break-word; }
+  .line .val { color:#eaffea; }
+  .line.warn { color:#ff003c; text-shadow:0 0 6px #ff003c; }
+  .line.warn .val { color:#ff5c78; }
+  .foot { margin-top:22px; text-align:center; font-size:.72rem; color:#00ff4199; line-height:1.65; }
+  .foot b { color:#adff2f; letter-spacing:.08em; }
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+<div class="wrap">
+  <pre class="skull">
+                 uuuuuuu
+             uu$$$$$$$$$$$uu
+          uu$$$$$$$$$$$$$$$$$uu
+         u$$$$$$$$$$$$$$$$$$$$$u
+        u$$$$$$$$$$$$$$$$$$$$$$$u
+        u$$$$$$$$$$$$$$$$$$$$$$$u
+        u$$$$$$"   "$$$"   "$$$$$$u
+        "$$$$"      u$u       $$$$"
+         $$$u       u$u       u$$$
+         $$$u      u$$$u      u$$$
+          "$$$$uu$$$   $$$uu$$$$"
+           "$$$$$$$"   "$$$$$$$"
+             u$$$$$$$u$$$$$$$u
+              u$"$"$"$"$"$"$u
+   uuu        $$u$ $ $ $ $u$$       uuu
+  u$$$$        $$$$$u$u$u$$$       u$$$$
+   $$$$$uu      "$$$$$$$$$"     uu$$$$$$
+ u$$$$$$$$$$$uu    """""    uuuu$$$$$$$$$$
+ $$$$"""$$$$$$$$$$uuu   uu$$$$$$$$$"""$$$"
+  """      ""$$$$$$$$$$$uu ""$"""
+            uuuu ""$$$$$$$$$$uuu
+   u$$$uuu$$$$$$$$$uu ""$$$$$$$$$$$uuu$$$
+   $$$$$$$$$$""""           ""$$$$$$$$$$$"
+    "$$$$$"                      ""$$$$""
+      $$$"                         $$$$"
+  </pre>
+  <div class="title" data-text="I GOT IT">I GOT IT</div>
+  <div class="access" id="access"></div>
+  <div class="term">
+    <div class="line">&gt; établissement de la liaison... <span style="color:#adff2f">OK</span></div>
+    <div class="line">&gt; extraction des données de la cible...</div>
+    <h2>[ LOCALISATION / IP ]</h2>
+    <div id="geo"><div class="line">&gt; scan...</div></div>
+    <h2>[ EMPREINTE DE L'APPAREIL ]</h2>
+    <div id="infos"><div class="line">&gt; scan...</div></div>
+  </div>
+  <div class="foot">
+    <b>// DÉMONSTRATION DE SENSIBILISATION — TP CYBER</b><br>
+    Un simple lien a pu lire tout ceci sur votre appareil. Aucune magie : c'est ce que
+    votre navigateur expose. Restez vigilant face aux liens inconnus.
+  </div>
 </div>
 <script>
-function getGPU(){try{const c=document.createElement('canvas');const g=c.getContext('webgl')||c.getContext('experimental-webgl');if(!g)return"?";const d=g.getExtension('WEBGL_debug_renderer_info');return d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):(g.getParameter(g.RENDERER)||"?");}catch(e){return"?";}}
-async function getBatterie(){try{if(!navigator.getBattery)return null;const b=await navigator.getBattery();return Math.round(b.level*100)+"%"+(b.charging?" (en charge)":"");}catch(e){return null;}}
-function collecte(){const n=navigator,s=screen,c=n.connection||{};return{
+/* ---- Pluie "Matrix" ---- */
+(function(){
+  var cv=document.getElementById('matrix'), ctx=cv.getContext('2d');
+  function rs(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
+  rs(); window.addEventListener('resize', rs);
+  var chars="01アイウエオカキクケコサシabcdef$#%&".split('');
+  var fs=14, cols=Math.floor(window.innerWidth/fs), drops=[];
+  for(var i=0;i<cols;i++){ drops[i]=Math.random()*-50; }
+  setInterval(function(){
+    ctx.fillStyle='rgba(0,0,0,0.09)'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle='#00ff41'; ctx.font=fs+'px monospace';
+    for(var i=0;i<drops.length;i++){
+      var t=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(t, i*fs, drops[i]*fs);
+      if(drops[i]*fs>cv.height && Math.random()>0.975){ drops[i]=0; }
+      drops[i]++;
+    }
+  },55);
+})();
+
+/* ---- Effet machine à écrire ---- */
+(function(){
+  var el=document.getElementById('access'), txt="root@target:~# ACCESS GRANTED", i=0;
+  (function tick(){
+    if(i<=txt.length){ el.innerHTML=txt.slice(0,i)+'<span class="cursor">█</span>'; i++; setTimeout(tick,55); }
+    else { el.innerHTML=txt+' <span class="cursor">█</span>'; }
+  })();
+})();
+
+/* ---- Collecte (uniquement ce que le navigateur expose) ---- */
+function getGPU(){try{var c=document.createElement('canvas');var g=c.getContext('webgl')||c.getContext('experimental-webgl');if(!g)return"?";var d=g.getExtension('WEBGL_debug_renderer_info');return d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):(g.getParameter(g.RENDERER)||"?");}catch(e){return"?";}}
+function getBatterie(){return new Promise(function(res){try{if(!navigator.getBattery)return res(null);navigator.getBattery().then(function(b){res(Math.round(b.level*100)+"%"+(b.charging?" (en charge)":""));});}catch(e){res(null);}});}
+function collecte(){var n=navigator,s=screen,c=n.connection||{};return{
   userAgent:n.userAgent, plateforme:n.platform||"?", GPU:getGPU(),
   langues:(n.languages||[n.language]).join(", "), coeurs_CPU:n.hardwareConcurrency||"?",
   memoire_Go:n.deviceMemory||"inconnu", ecran:s.width+" x "+s.height+" @"+(window.devicePixelRatio||1)+"x",
   tactile:(n.maxTouchPoints>0)?"oui ("+n.maxTouchPoints+" pts)":"non",
   fuseau_horaire:Intl.DateTimeFormat().resolvedOptions().timeZone,
   connexion:c.effectiveType?(c.effectiveType+(c.downlink?", "+c.downlink+" Mb/s":"")):"?",
-  cookies:n.cookieEnabled?"activés":"désactivés"};}
-const L={userAgent:"Appareil/Navigateur",plateforme:"Plateforme",GPU:"GPU",langues:"Langues",coeurs_CPU:"Coeurs CPU",memoire_Go:"Mémoire (Go)",ecran:"Écran",tactile:"Tactile",fuseau_horaire:"Fuseau horaire",connexion:"Connexion",cookies:"Cookies",batterie:"Batterie",pays:"Pays",region:"Région",ville:"Ville",code_postal:"Code postal",coordonnees_IP:"Coordonnées (IP)",FAI:"FAI",operateur:"Opérateur",AS:"AS",reseau_mobile:"Réseau mobile",VPN_proxy:"VPN/Proxy",hebergement_datacenter:"Datacenter",note:"Info",erreur:"Erreur"};
-function afficher(id,o){let h="";for(const k in o){if(o[k]==null)continue;const v=String(o[k]);h+='<div class="row"><span class="k">'+(L[k]||k)+'</span><span class="'+(v.includes("⚠️")?"v warn":"v")+'">'+v+'</span></div>';}document.getElementById(id).innerHTML=h;}
-async function main(){const d=collecte();const b=await getBatterie();if(b)d.batterie=b;afficher("infos",d);
-  try{const r=await fetch("/collect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}).then(x=>x.json());if(r&&r.geoloc_ip)afficher("geo",r.geoloc_ip);}catch(e){afficher("geo",{erreur:"envoi impossible"});}}
+  cookies:n.cookieEnabled?"actifs":"inactifs"};}
+var L={userAgent:"appareil",plateforme:"plateforme",GPU:"gpu",langues:"langues",coeurs_CPU:"coeurs_cpu",memoire_Go:"memoire_go",ecran:"ecran",tactile:"tactile",fuseau_horaire:"fuseau",connexion:"connexion",cookies:"cookies",batterie:"batterie",pays:"pays",region:"region",ville:"ville",code_postal:"code_postal",coordonnees_IP:"coords_ip",FAI:"fai",operateur:"operateur",AS:"as",reseau_mobile:"mobile",VPN_proxy:"vpn_proxy",hebergement_datacenter:"datacenter",note:"info",erreur:"erreur"};
+function afficher(id,o){var h="";for(var k in o){if(o[k]==null)continue;var v=String(o[k]);var warn=v.indexOf("⚠️")>=0;h+='<div class="line'+(warn?" warn":"")+'">&gt; '+(L[k]||k)+' : <span class="val">'+v+'</span></div>';}document.getElementById(id).innerHTML=h;}
+function main(){var d=collecte();getBatterie().then(function(b){if(b)d.batterie=b;afficher("infos",d);
+  fetch("/collect",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}).then(function(r){return r.json();}).then(function(r){if(r&&r.geoloc_ip)afficher("geo",r.geoloc_ip);}).catch(function(){afficher("geo",{erreur:"liaison interrompue"});});});}
 main();
-</script></body></html>
-"""
+</script>
+</body>
+</html>
+'''
 
 # --- Page /admin : tableau de bord des captures (protégé par jeton) ---
 ADMIN_PAGE = """
@@ -142,20 +235,20 @@ ADMIN_PAGE = """
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — captures</title>
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, sans-serif; margin: 0; background: #0b1220; color: #e2e8f0; }
+    :root { color-scheme: dark; }
+    body { font-family: 'Courier New', monospace; margin: 0; background: #000; color: #00ff41; }
     .wrap { max-width: 900px; margin: 0 auto; padding: 22px 16px 60px; }
-    h1 { font-size: 1.3rem; margin: 0 0 2px; }
-    .sub { color: #94a3b8; font-size: .85rem; margin: 0 0 18px; }
-    .card { background: #111c33; border: 1px solid #263349; border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
-    .hd { font-size: .95rem; margin-bottom: 8px; border-bottom: 1px solid #263349; padding-bottom: 6px; }
+    h1 { font-size: 1.3rem; margin: 0 0 2px; text-shadow:0 0 8px #00ff41; }
+    .sub { color: #00ff4199; font-size: .85rem; margin: 0 0 18px; }
+    .card { background: rgba(0,26,5,0.6); border: 1px solid #00ff4144; border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+    .hd { font-size: .95rem; margin-bottom: 8px; border-bottom: 1px solid #00ff4133; padding-bottom: 6px; }
     .flag { background:#b91c1c; color:#fff; font-size:.68rem; padding:2px 7px; border-radius:5px; margin-left:6px; }
     .cols { display: flex; flex-wrap: wrap; gap: 18px; }
     .col { flex: 1 1 300px; min-width: 0; }
-    h3 { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: #38bdf8; margin: 4px 0 6px; }
-    .row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid #1e293b; font-size: .82rem; }
-    .k { color: #8595ad; } .v { text-align: right; word-break: break-word; } .warn { color: #fca5a5; font-weight: 600; }
-    .empty { color: #64748b; }
+    h3 { font-size: .72rem; letter-spacing: .1em; color: #adff2f; margin: 4px 0 6px; }
+    .row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid #00ff411a; font-size: .82rem; }
+    .k { color: #00ff4199; } .v { text-align: right; word-break: break-word; color:#eaffea; } .warn { color: #ff5c78; font-weight: 600; }
+    .empty { color: #00ff4166; }
   </style></head>
 <body><div class="wrap">
   <h1>🗂️ Tableau de bord — {{ total }} visite(s)</h1>
@@ -194,7 +287,7 @@ def index():
     print(f"\n{C.YELLOW}{C.BOLD}[VISITE] {datetime.datetime.now():%H:%M:%S}"
           f"  IP {C.GREEN}{ip}{C.RESET}")
     print(f"  {C.CYAN}User-Agent :{C.RESET} {request.headers.get('User-Agent', '?')}")
-    return render_template_string(PAGE)
+    return PAGE
 
 
 @app.route("/collect", methods=["POST"])
@@ -214,11 +307,9 @@ def collect():
         "appareil_client": client,
     }
 
-    # 1) fichier individuel par visite
     nom = horodatage.replace(":", "-") + "_" + ip.replace(":", "_") + ".json"
     (CAPTURES_DIR / nom).write_text(
         json.dumps(dossier, indent=2, ensure_ascii=False), encoding="utf-8")
-    # 2) journal consolidé : TOUT au même endroit, 1 ligne JSON par visite
     with JOURNAL.open("a", encoding="utf-8") as f:
         f.write(json.dumps(dossier, ensure_ascii=False) + "\n")
 
@@ -236,7 +327,6 @@ def collect():
 
 @app.route("/admin")
 def admin():
-    # Contrôle d'accès : sans le bon jeton, pas de tableau de bord.
     if not secrets.compare_digest(request.args.get("token", ""), ADMIN_TOKEN):
         return ("<h1>403 — accès refusé</h1><p>Ajoute <code>?token=...</code> à l'URL.</p>", 403)
     rows = []
@@ -248,7 +338,7 @@ def admin():
                     rows.append(json.loads(ligne))
                 except json.JSONDecodeError:
                     pass
-    rows.reverse()  # plus récent en premier
+    rows.reverse()
     return render_template_string(ADMIN_PAGE, rows=rows, total=len(rows))
 
 
